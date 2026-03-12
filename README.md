@@ -1,4 +1,4 @@
-# Quantus QA Automation
+# Quantus TC Automation
 
 Figma 디자인을 분석하여 QA 테스트 케이스(TC)를 자동 생성하고 xlsx 파일로 저장하는 자동화 도구입니다.
 
