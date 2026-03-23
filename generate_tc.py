@@ -1,6 +1,8 @@
 import openpyxl
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
+from openpyxl.worksheet.datavalidation import DataValidation
+from openpyxl.formatting.rule import CellIsRule
 import os, sys, importlib.util
 
 # ──────────────────────────────────────────
@@ -145,6 +147,28 @@ for row_idx, row in enumerate(tc_data, start=5):
     ws.row_dimensions[row_idx].height = 30
 
 ws.auto_filter.ref = "A4:L4"
+
+# ──────────────────────────────────────────
+# 데이터 유효성 검사: Android(I), iOS(J) 컬럼 → P / F / NA / NT
+# ──────────────────────────────────────────
+last_row = 4 + len(tc_data)
+dv = DataValidation(
+    type="list",
+    formula1='"P,F,NA,NT"',
+    allow_blank=True,
+    showDropDown=False,
+)
+dv.sqref = f"I5:J{last_row}"
+ws.add_data_validation(dv)
+
+# ──────────────────────────────────────────
+# 조건부 서식: F 값 → 연한 빨간색 배경
+# ──────────────────────────────────────────
+red_fill = PatternFill(fill_type="solid", fgColor="FFCCCC")
+ws.conditional_formatting.add(
+    f"I5:J{last_row}",
+    CellIsRule(operator="equal", formula=['"F"'], fill=red_fill),
+)
 
 wb.save(file_path)
 print(f"저장 완료: {file_path}")
