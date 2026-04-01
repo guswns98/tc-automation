@@ -43,7 +43,7 @@ ALIGN_LEFT   = Alignment(horizontal="left",   vertical="center", wrap_text=True)
 # ──────────────────────────────────────────
 # 워크북 생성
 # ──────────────────────────────────────────
-output_dir = r"C:\Users\rkd98\TC_Automation\output"
+output_dir = r"C:\Users\rkd98\QA\TC_Automation\output"
 os.makedirs(output_dir, exist_ok=True)
 file_path = os.path.join(output_dir, f"QA_{screen_name}_TC.xlsx")
 
@@ -147,6 +147,32 @@ for row_idx, row in enumerate(tc_data, start=5):
     ws.row_dimensions[row_idx].height = 30
 
 ws.auto_filter.ref = "A4:L4"
+
+# ──────────────────────────────────────────
+# A~D열 (1~4 Depth) 연속 동일 값 셀 병합
+# 상위 Depth가 같을 때만 하위 Depth 병합
+# ──────────────────────────────────────────
+data_start = 5
+data_end   = 4 + len(tc_data)
+col_letters = ["A", "B", "C", "D"]  # 1~4 Depth
+
+for col_idx, col_letter in enumerate(col_letters, start=1):
+    merge_start = data_start
+    for r in range(data_start + 1, data_end + 2):
+        # 현재 행과 병합 시작 행의 1~col_idx 값이 모두 같아야 병합 유지
+        same_group = all(
+            ws.cell(row=r, column=c).value == ws.cell(row=merge_start, column=c).value
+            for c in range(1, col_idx + 1)
+        )
+
+        if not same_group or r == data_end + 1:
+            if r - 1 > merge_start:
+                ws.merge_cells(f"{col_letter}{merge_start}:{col_letter}{r - 1}")
+                c = ws.cell(row=merge_start, column=col_idx)
+                c.alignment = ALIGN_CENTER
+                c.font      = FONT_DATA
+                c.border    = border_thin()
+            merge_start = r
 
 # ──────────────────────────────────────────
 # 데이터 유효성 검사: Android(I), iOS(J) 컬럼 → P / F / NA / NT
